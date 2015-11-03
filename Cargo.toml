@@ -1,0 +1,10 @@
+[package]
+name = "serde_utils"
+version = "0.1.0"
+authors = ["Dennis Schwerdel <schwerdel@googlemail.com>"]
+
+[dependencies]
+serde = "0.6"
+
+[dev-dependencies]
+rmp-serde = "0.8"
