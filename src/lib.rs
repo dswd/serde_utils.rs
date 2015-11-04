@@ -5,7 +5,7 @@
 //!
 //! * [`Obj`](struct.Obj.html) - A generic object that can hold any value deserialized via Serde.
 //!
-//! * [`serde_impl!`](macro.serde_impl!.html#using-the-macro) - A cacro for implementing (de-)serialization
+//! * [`serde_impl!`](macro.serde_impl!.html#using-the-macro) - A macro for implementing (de-)serialization
 //!   via serde in common cases.
 //!
 //! # Using this crate

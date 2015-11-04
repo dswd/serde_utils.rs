@@ -25,7 +25,7 @@ pub enum Obj {
     /// `None` / `null` / `nil`
     Null,
 
-    /// Boolean vaue
+    /// Boolean value
     Bool(bool),
 
     /// Unsigned integer
