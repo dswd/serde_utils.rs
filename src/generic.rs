@@ -75,6 +75,16 @@ impl Default for Obj {
 
 impl PartialEq for Obj {
     fn eq(&self, other: &Self) -> bool {
+        if let &Obj::Signed(val) = self {
+            if val >= 0 {
+                return &Obj::Unsigned(val as u64) == other;
+            }
+        }
+        if let &Obj::Signed(val) = other {
+            if val >= 0 {
+                return self == &Obj::Unsigned(val as u64);
+            }
+        }
         match self {
             &Obj::Null => if let &Obj::Null = other { true } else { false },
             &Obj::Bool(val) => if let &Obj::Bool(oval) = other { val == oval } else { false },
@@ -99,6 +109,16 @@ impl PartialOrd for Obj {
 
 impl Ord for Obj {
     fn cmp(&self, other: &Self) -> Ordering {
+        if let &Obj::Signed(val) = self {
+            if val >= 0 {
+                return Obj::Unsigned(val as u64).cmp(other);
+            }
+        }
+        if let &Obj::Signed(val) = other {
+            if val >= 0 {
+                return self.cmp(&Obj::Unsigned(val as u64));
+            }
+        }
         let stype = self.type_num();
         let otype = other.type_num();
         if stype != otype {
@@ -158,6 +178,11 @@ impl Ord for Obj {
 
 impl Hash for Obj {
     fn hash<H>(&self, state: &mut H) where H: Hasher {
+        if let &Obj::Signed(val) = self {
+            if val >= 0 {
+                return Obj::Unsigned(val as u64).hash(state);
+            }
+        }
         state.write_u8(self.type_num());
         match self {
             &Obj::Null => (),
