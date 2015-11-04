@@ -19,6 +19,8 @@ use serde::de::{Visitor, SeqVisitor, MapVisitor, Error};
 ///
 /// Note: The implementations of `PartialEq`, `PartialOrd`, and `Ord` traits treat `NAN` floats as
 ///       equal.
+///       The implementations of `Hash`, `PartialEq`, `PartialOrd`, and `Ord` traits treat
+///       non-negative `Signed` objects like `Unsigned` objects with the same value.
 #[allow(dead_code)]
 #[derive(Debug, Clone)]
 pub enum Obj {
@@ -28,11 +30,11 @@ pub enum Obj {
     /// Boolean value
     Bool(bool),
 
-    /// Unsigned integer
-    Unsigned(u64),
-
     /// Signed integer
     Signed(i64),
+
+    /// Unsigned integer
+    Unsigned(u64),
 
     /// Floating-point value
     Float(f64),
@@ -55,8 +57,8 @@ impl Obj {
         match self {
             &Obj::Null => 0,
             &Obj::Bool(_) => 1,
-            &Obj::Unsigned(_) => 2,
-            &Obj::Signed(_) => 3,
+            &Obj::Signed(_) => 2,
+            &Obj::Unsigned(_) => 3,
             &Obj::Float(_) => 4,
             &Obj::Str(_) => 5,
             &Obj::Bin(_) => 6,
@@ -90,7 +92,9 @@ impl PartialEq for Obj {
             &Obj::Bool(val) => if let &Obj::Bool(oval) = other { val == oval } else { false },
             &Obj::Unsigned(val) => if let &Obj::Unsigned(oval) = other { val == oval } else { false },
             &Obj::Signed(val) => if let &Obj::Signed(oval) = other { val == oval } else { false },
-            &Obj::Float(val) => if let &Obj::Float(oval) = other { ! (val != oval) } else { false },
+            &Obj::Float(val) => if let &Obj::Float(oval) = other {
+                if val.is_nan() && oval.is_nan() { true } else { val == oval }
+            } else { false },
             &Obj::Str(ref val) => if let &Obj::Str(ref oval) = other { val == oval } else { false },
             &Obj::Bin(ref val) => if let &Obj::Bin(ref oval) = other { val == oval } else { false },
             &Obj::List(ref val) => if let &Obj::List(ref oval) = other { val == oval } else { false },
