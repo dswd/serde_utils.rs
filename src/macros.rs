@@ -6,6 +6,7 @@ extern crate serde;
 /// The macro provides implementations for `Serialize` and `Deserialize` for various kinds or
 /// data types. The macro syntax tries to stay as close as possible to the declaration of the
 /// data type.
+/// To use the macro, `serde` must be imported by either `use serde;` or `extern crate serde;`. 
 ///
 /// ## (De-)Serializing `struct`s as maps
 ///
