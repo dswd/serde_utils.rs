@@ -8,17 +8,45 @@ use serde::bytes::ByteBuf;
 use serde::{Serialize, Serializer, Deserialize, Deserializer};
 use serde::de::{Visitor, SeqVisitor, MapVisitor, Error};
 
+/// A generic object that can hold any value deserialized via Serde.
+///
+/// The important aspect of this generic object enum is that it can consume all possible values and
+/// does not expect any specific types. This makes it possible to deserialize data first and
+/// interpret it later.
+///
+/// **Warning**: Deserializing and even serializing unknown content allows attackers to control the
+///              recursion depth of the process and potentially crash it (although in a safe way).
+///
+/// Note: The implementations of `PartialEq`, `PartialOrd`, and `Ord` traits treat `NAN` floats as
+///       equal.
 #[allow(dead_code)]
 #[derive(Debug, Clone)]
 pub enum Obj {
+    /// `None` / `null` / `nil`
     Null,
+
+    /// Boolean vaue
     Bool(bool),
+
+    /// Unsigned integer
     Unsigned(u64),
+
+    /// Signed integer
     Signed(i64),
+
+    /// Floating-point value
     Float(f64),
+
+    /// Utf-8 string
     Str(String),
+
+    /// Byte sequence
     Bin(ByteBuf),
+
+    /// List / tuple / sequence
     List(Vec<Obj>),
+
+    /// Mapping / object
     Map(BTreeMap<Obj, Obj>)
 }
 
