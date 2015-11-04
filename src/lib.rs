@@ -1,6 +1,6 @@
 //! Utility macros and types for Serde
 //!
-//! This crate provides some utlitity macros and types to be used with Serde.
+//! This crate provides some utility macros and types to be used with Serde.
 //! It currently includes:
 //!
 //! * [`Obj`](struct.Obj.html) - A generic object that can hold any value deserialized via Serde.

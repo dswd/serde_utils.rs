@@ -2,6 +2,13 @@
 name = "serde_utils"
 version = "0.1.0"
 authors = ["Dennis Schwerdel <schwerdel@googlemail.com>"]
+license = "LGPL-3.0"
+description = "Utility macros and types for Serde."
+homepage = "https://github.com/dswd/serde_utils.rs"
+repository = "https://github.com/dswd/serde_utils.rs"
+documentation = "http://dswd.github.io/serde_utils.rs/serde_utils/index.html"
+keywords = ["serde"]
+readme = "README.md"
 
 [dependencies]
 serde = "0.6"
