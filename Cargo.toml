@@ -11,7 +11,7 @@ keywords = ["serde"]
 readme = "README.md"
 
 [dependencies]
-serde = "0.6"
+serde = "0.7"
 
 [dev-dependencies]
 rmp-serde = "0.8"

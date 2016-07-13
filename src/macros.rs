@@ -6,7 +6,7 @@ extern crate serde;
 /// The macro provides implementations for `Serialize` and `Deserialize` for various kinds or
 /// data types. The macro syntax tries to stay as close as possible to the declaration of the
 /// data type.
-/// To use the macro, `serde` must be imported by either `use serde;` or `extern crate serde;`. 
+/// To use the macro, `serde` must be imported by either `use serde;` or `extern crate serde;`.
 ///
 /// ## (De-)Serializing `struct`s as maps
 ///
@@ -246,7 +246,7 @@ macro_rules! serde_impl(
                 struct _Serializer<'a>(&'a $name);
                 impl<'a> serde::ser::MapVisitor for _Serializer<'a> {
                     fn visit<S: serde::Serializer>(&mut self, ser: &mut S) -> Result<Option<()>, S::Error> {
-                        $( try!(ser.visit_map_elt($fkey, &(self.0).$fname)); )*
+                        $( try!(ser.serialize_map_elt($fkey, &(self.0).$fname)); )*
                         Ok(None)
                     }
                     #[inline]
@@ -255,12 +255,13 @@ macro_rules! serde_impl(
                         Some( [ $( $fkey ),+ ].len() )
                     }
                 }
-                ser.visit_map(_Serializer(self))
+                ser.serialize_map(_Serializer(self))
 
             }
         }
         impl serde::Deserialize for $name {
             fn deserialize<D: serde::Deserializer>(de: &mut D) -> Result<Self, D::Error> {
+                use serde_utils::Obj as _DummyObjToSkipUnknownFields;
                 struct _Deserializer;
                 impl serde::de::Visitor for _Deserializer {
                     type Value = $name;
@@ -273,12 +274,12 @@ macro_rules! serde_impl(
                                     continue
                                 }
                             )*
-                            let _skip: serde_utils::Obj = try!(visitor.visit_value());
+                            let _skip: _DummyObjToSkipUnknownFields = try!(visitor.visit_value());
                         }
                         Ok(obj)
                     }
                 }
-                Ok(try!(de.visit_map(_Deserializer)))
+                Ok(try!(de.deserialize_map(_Deserializer)))
             }
         }
     };
@@ -307,14 +308,14 @@ macro_rules! serde_impl(
         }
         impl serde::Deserialize for $name {
             fn deserialize<D: serde::Deserializer>(de: &mut D) -> Result<Self, D::Error> {
-                use serde::de::Error;
+                use serde::de::Error as _DummyErrorJustToUseTrait;
                 let key = try!($ktype::deserialize(de));
                 $(
                     if &key == &$fkey {
                         return Ok($name::$variant);
                     }
                 )*
-                Err(D::Error::syntax("Invalid enum"))
+                Err(D::Error::unknown_variant("Invalid enum"))
             }
         }
     };
@@ -335,17 +336,17 @@ macro_rules! serde_impl(
                 impl serde::de::Visitor for _Deserializer {
                     type Value = $name;
                     fn visit_seq<V: serde::de::SeqVisitor>(&mut self, mut visitor: V) -> Result<$name, V::Error> {
-                        use serde::de::Error;
+                        use serde::de::Error as _DummyErrorJustToUseTrait;
                         let key: $ktype = try!(try!(visitor.visit()).ok_or(V::Error::end_of_stream()));
                         $(
                             if &key == &$fkey {
                                 return Ok($name::$variant(try!(try!(visitor.visit()).ok_or(V::Error::end_of_stream()))));
                             }
                         )*
-                        Err(V::Error::syntax("Invalid enum"))
+                        Err(V::Error::unknown_variant("Invalid enum"))
                     }
                 }
-                de.visit_tuple(2, _Deserializer)
+                de.deserialize_tuple(2, _Deserializer)
             }
         }
     };
