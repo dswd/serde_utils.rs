@@ -112,7 +112,7 @@ extern crate serde;
 /// serializable data type. The syntax in this case is:
 ///
 /// ```ignore
-/// serde_impl!($name {
+/// serde_impl!($name($ktype) {
 ///    $variant => $fkey,
 ///    ...
 /// });
@@ -162,7 +162,7 @@ extern crate serde;
 /// The syntax in this case is:
 ///
 /// ```ignore
-/// serde_impl!($name {
+/// serde_impl!($name($ktype) {
 ///    $variant($ftype) => $fkey,
 ///    ...
 /// });
