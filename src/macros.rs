@@ -239,7 +239,62 @@ extern crate serde;
 /// * More fancy key types than String and numeric types might not work
 #[macro_export]
 macro_rules! serde_impl(
-    // Serde impl for struct $name { $fname: $ftype } as map
+    // Serde impl for struct $name*($ktype) { $fname: $ftype } as map
+    ( $name:ident($ktype:ident?) { $( $fname:ident : $ftype:ty => $fkey:expr ),+ } ) => {
+        impl serde::Serialize for $name {
+            fn serialize<S: serde::Serializer>(&self, ser: &mut S) -> Result<(), S::Error> {
+                struct _Serializer<'a>(&'a $name);
+                impl<'a> serde::ser::MapVisitor for _Serializer<'a> {
+                    fn visit<S: serde::Serializer>(&mut self, ser: &mut S) -> Result<Option<()>, S::Error> {
+                        let default: $name = Default::default();
+                        $(
+                            if (self.0).$fname != default.$fname {
+                                try!(ser.serialize_map_elt($fkey, &(self.0).$fname));
+                            }
+                        )*
+                        Ok(None)
+                    }
+                    #[inline]
+                    fn len(&self) -> Option<usize> {
+                        let default: $name = Default::default();
+                        let mut len = 0;
+                        $(
+                            if (self.0).$fname != default.$fname {
+                                len += 1;
+                            }
+                        )*
+                        Some(len)
+                    }
+                }
+                ser.serialize_map(_Serializer(self))
+
+            }
+        }
+        impl serde::Deserialize for $name {
+            fn deserialize<D: serde::Deserializer>(de: &mut D) -> Result<Self, D::Error> {
+                use serde_utils::Obj as _DummyObjToSkipUnknownFields;
+                struct _Deserializer;
+                impl serde::de::Visitor for _Deserializer {
+                    type Value = $name;
+                    fn visit_map<V: serde::de::MapVisitor>(&mut self, mut visitor: V) -> Result<Self::Value, V::Error> {
+                        let mut obj: $name = Default::default();
+                        while let Some(key) = try!(visitor.visit_key::<$ktype>()) {
+                            $(
+                                if &key == &$fkey {
+                                    obj.$fname = try!(visitor.visit_value());
+                                    continue
+                                }
+                            )*
+                            let _skip: _DummyObjToSkipUnknownFields = try!(visitor.visit_value());
+                        }
+                        Ok(obj)
+                    }
+                }
+                Ok(try!(de.deserialize_map(_Deserializer)))
+            }
+        }
+    };
+    // Serde impl for struct $name($ktype) { $fname: $ftype } as map
     ( $name:ident($ktype:ident) { $( $fname:ident : $ftype:ty => $fkey:expr ),+ } ) => {
         impl serde::Serialize for $name {
             fn serialize<S: serde::Serializer>(&self, ser: &mut S) -> Result<(), S::Error> {
@@ -286,11 +341,13 @@ macro_rules! serde_impl(
     // Serde impl for struct $name { $fname: $ftype } as tuple
     ( $name:ident { $( $fname:ident : $ftype:ty ),+ } ) => {
         impl serde::Serialize for $name {
+            #[inline]
             fn serialize<S: serde::Serializer>(&self, ser: &mut S) -> Result<(), S::Error> {
                 ($( &self.$fname ),*).serialize(ser)
             }
         }
         impl serde::Deserialize for $name {
+            #[inline]
             fn deserialize<D: serde::Deserializer>(de: &mut D) -> Result<Self, D::Error> {
                 type T = ( $($ftype),* );
                 T::deserialize(de).map(|( $($fname),* )| $name { $( $fname: $fname ),* })
