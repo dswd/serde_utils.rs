@@ -243,31 +243,21 @@ macro_rules! serde_impl(
     ( $name:ident($ktype:ident?) { $( $fname:ident : $ftype:ty => $fkey:expr ),+ } ) => {
         impl serde::Serialize for $name {
             fn serialize<S: serde::Serializer>(&self, ser: &mut S) -> Result<(), S::Error> {
-                struct _Serializer<'a>(&'a $name);
-                impl<'a> serde::ser::MapVisitor for _Serializer<'a> {
-                    fn visit<S: serde::Serializer>(&mut self, ser: &mut S) -> Result<Option<()>, S::Error> {
-                        let default: $name = Default::default();
-                        $(
-                            if (self.0).$fname != default.$fname {
-                                try!(ser.serialize_map_elt($fkey, &(self.0).$fname));
-                            }
-                        )*
-                        Ok(None)
+                let default: $name = Default::default();
+                let mut len = 0;
+                $(
+                    if (self.0).$fname != default.$fname {
+                        len += 1;
                     }
-                    #[inline]
-                    fn len(&self) -> Option<usize> {
-                        let default: $name = Default::default();
-                        let mut len = 0;
-                        $(
-                            if (self.0).$fname != default.$fname {
-                                len += 1;
-                            }
-                        )*
-                        Some(len)
+                )*
+                let mut state = try!(ser.serialize_map(Some(len)));
+                $(
+                    if (self.0).$fname != default.$fname {
+                        try!(ser.serialize_map_key(&mut state, $fkey));
+                        try!(ser.serialize_map_value(&mut state, &self.$fname));
                     }
-                }
-                ser.serialize_map(_Serializer(self))
-
+                )*
+                ser.serialize_map_end(state)
             }
         }
         impl serde::Deserialize for $name {
@@ -298,20 +288,12 @@ macro_rules! serde_impl(
     ( $name:ident($ktype:ident) { $( $fname:ident : $ftype:ty => $fkey:expr ),+ } ) => {
         impl serde::Serialize for $name {
             fn serialize<S: serde::Serializer>(&self, ser: &mut S) -> Result<(), S::Error> {
-                struct _Serializer<'a>(&'a $name);
-                impl<'a> serde::ser::MapVisitor for _Serializer<'a> {
-                    fn visit<S: serde::Serializer>(&mut self, ser: &mut S) -> Result<Option<()>, S::Error> {
-                        $( try!(ser.serialize_map_elt($fkey, &(self.0).$fname)); )*
-                        Ok(None)
-                    }
-                    #[inline]
-                    fn len(&self) -> Option<usize> {
-                        // This should be optimized into a number
-                        Some( [ $( $fkey ),+ ].len() )
-                    }
-                }
-                ser.serialize_map(_Serializer(self))
-
+                let mut state = try!(ser.serialize_map(Some( [ $( $fkey ),+ ].len() )));
+                $(
+                    try!(ser.serialize_map_key(&mut state, $fkey));
+                    try!(ser.serialize_map_value(&mut state, &self.$fname));
+                )*
+                ser.serialize_map_end(state)
             }
         }
         impl serde::Deserialize for $name {
