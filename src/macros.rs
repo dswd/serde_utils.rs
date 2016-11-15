@@ -68,6 +68,22 @@ extern crate serde;
 /// When deserializing data, the generated implementation will silently ignore all extra fields
 /// and use the default value for all missing fields.
 ///
+///
+/// ### Compressed maps
+///
+/// By adding a question mark after the key type the serialization will make sure to omit map
+/// entries containing the default value. During serialization, the default value will be set on
+/// all omitted fields.
+///
+/// ```ignore
+/// serde_impl!(Test(String?) {
+///     test: String => "test",
+///     num: u64 => "num",
+///     option: Option<bool> => "option"
+/// });
+/// ```
+///
+///
 /// ## (De-)Serializing `struct`s as tuples
 ///
 /// It is also possible to (de-)serialize structs as tuples containing all the fields in order.

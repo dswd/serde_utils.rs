@@ -48,6 +48,18 @@ serde_impl!(IntMapTest(u64) {
     option: Option<bool> => 2
 });
 
+#[derive(Default, Debug, PartialEq)]
+struct CompressedIntMapTest {
+    test: String,
+    num: u64,
+    option: Option<bool>,
+}
+serde_impl!(CompressedIntMapTest(u64?) {
+    test: String => 0,
+    num: u64 => 1,
+    option: Option<bool> => 2
+});
+
 #[test]
 fn test_int_map() {
     test_obj(IntMapTest{test: "".to_string(), num: 0, option: None});
@@ -66,6 +78,13 @@ fn test_int_map_extended() {
     let bytes = to_bytes(&IntMapTest{test: "test".to_string(), num: 56, option: Some(true)});
     let obj = from_bytes(&bytes);
     assert_eq!(IntMapTestReduced{test: "test".to_string(), option: Some(true)}, obj);
+}
+
+#[test]
+fn test_compressed_int_map() {
+    test_obj(CompressedIntMapTest{test: "".to_string(), num: 0, option: None});
+    test_obj(CompressedIntMapTest{test: "test".to_string(), num: 56, option: Some(true)});
+    assert_eq!(to_bytes(&CompressedIntMapTest::default()).len(), 1);
 }
 
 #[derive(Default, Debug, PartialEq)]
