@@ -246,13 +246,13 @@ macro_rules! serde_impl(
                 let default: $name = Default::default();
                 let mut len = 0;
                 $(
-                    if (self.0).$fname != default.$fname {
+                    if self.$fname != default.$fname {
                         len += 1;
                     }
                 )*
                 let mut state = try!(ser.serialize_map(Some(len)));
                 $(
-                    if (self.0).$fname != default.$fname {
+                    if self.$fname != default.$fname {
                         try!(ser.serialize_map_key(&mut state, $fkey));
                         try!(ser.serialize_map_value(&mut state, &self.$fname));
                     }
