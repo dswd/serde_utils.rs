@@ -1,6 +1,6 @@
 extern crate serde;
 extern crate rmp_serde;
-#[macro_use] extern crate serde_utils;
+extern crate serde_utils;
 
 use std::fmt::Debug;
 use std::io::Cursor;

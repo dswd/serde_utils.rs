@@ -1,5 +1,3 @@
-extern crate serde;
-
 /// Macro for implementing (de-)serialization via serde in common cases
 ///
 /// # Using the macro
@@ -257,9 +255,9 @@ extern crate serde;
 macro_rules! serde_impl(
     // Serde impl for struct $name*($ktype) { $fname: $ftype } as map
     ( $name:ident($ktype:ident?) { $( $fname:ident : $ftype:ty => $fkey:expr ),+ } ) => {
-        impl serde::Serialize for $name {
-            fn serialize<S: serde::Serializer>(&self, ser: S) -> Result<S::Ok, S::Error> {
-                use serde::ser::SerializeMap;
+        impl ::serde::Serialize for $name {
+            fn serialize<S: ::serde::Serializer>(&self, ser: S) -> Result<S::Ok, S::Error> {
+                use ::serde::ser::SerializeMap;
                 let default: $name = Default::default();
                 let mut len = 0;
                 $(
@@ -276,17 +274,17 @@ macro_rules! serde_impl(
                 state.end()
             }
         }
-        impl serde::Deserialize for $name {
-            fn deserialize<D: serde::Deserializer>(de: D) -> Result<Self, D::Error> {
+        impl ::serde::Deserialize for $name {
+            fn deserialize<D: ::serde::Deserializer>(de: D) -> Result<Self, D::Error> {
                 use serde_utils::Obj as _DummyObjToSkipUnknownFields;
                 struct _Deserializer;
-                impl serde::de::Visitor for _Deserializer {
+                impl ::serde::de::Visitor for _Deserializer {
                     type Value = $name;
-                    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
                         write!(formatter, "map")
                     }
 
-                    fn visit_map<V: serde::de::MapVisitor>(self, mut visitor: V) -> Result<Self::Value, V::Error> {
+                    fn visit_map<V: ::serde::de::MapVisitor>(self, mut visitor: V) -> Result<Self::Value, V::Error> {
                         let mut obj: $name = Default::default();
                         while let Some(key) = try!(visitor.visit_key::<$ktype>()) {
                             $(
@@ -306,9 +304,9 @@ macro_rules! serde_impl(
     };
     // Serde impl for struct $name($ktype) { $fname: $ftype } as map
     ( $name:ident($ktype:ident) { $( $fname:ident : $ftype:ty => $fkey:expr ),+ } ) => {
-        impl serde::Serialize for $name {
-            fn serialize<S: serde::Serializer>(&self, ser: S) -> Result<S::Ok, S::Error> {
-                use serde::ser::SerializeMap;
+        impl ::serde::Serialize for $name {
+            fn serialize<S: ::serde::Serializer>(&self, ser: S) -> Result<S::Ok, S::Error> {
+                use ::serde::ser::SerializeMap;
                 let mut state = try!(ser.serialize_map(Some( [ $( $fkey ),+ ].len() )));
                 $(
                     try!(state.serialize_entry(&$fkey, &self.$fname));
@@ -316,17 +314,17 @@ macro_rules! serde_impl(
                 state.end()
             }
         }
-        impl serde::Deserialize for $name {
-            fn deserialize<D: serde::Deserializer>(de: D) -> Result<Self, D::Error> {
+        impl ::serde::Deserialize for $name {
+            fn deserialize<D: ::serde::Deserializer>(de: D) -> Result<Self, D::Error> {
                 use serde_utils::Obj as _DummyObjToSkipUnknownFields;
                 struct _Deserializer;
-                impl serde::de::Visitor for _Deserializer {
+                impl ::serde::de::Visitor for _Deserializer {
                     type Value = $name;
-                    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
                         write!(formatter, "map")
                     }
 
-                    fn visit_map<V: serde::de::MapVisitor>(self, mut visitor: V) -> Result<Self::Value, V::Error> {
+                    fn visit_map<V: ::serde::de::MapVisitor>(self, mut visitor: V) -> Result<Self::Value, V::Error> {
                         let mut obj: $name = Default::default();
                         while let Some(key) = try!(visitor.visit_key::<$ktype>()) {
                             $(
@@ -346,15 +344,15 @@ macro_rules! serde_impl(
     };
     // Serde impl for struct $name { $fname: $ftype } as tuple
     ( $name:ident { $( $fname:ident : $ftype:ty ),+ } ) => {
-        impl serde::Serialize for $name {
+        impl ::serde::Serialize for $name {
             #[inline]
-            fn serialize<S: serde::Serializer>(&self, ser: S) -> Result<S::Ok, S::Error> {
+            fn serialize<S: ::serde::Serializer>(&self, ser: S) -> Result<S::Ok, S::Error> {
                 ($( &self.$fname ),*).serialize(ser)
             }
         }
-        impl serde::Deserialize for $name {
+        impl ::serde::Deserialize for $name {
             #[inline]
-            fn deserialize<D: serde::Deserializer>(de: D) -> Result<Self, D::Error> {
+            fn deserialize<D: ::serde::Deserializer>(de: D) -> Result<Self, D::Error> {
                 type T = ( $($ftype),* );
                 T::deserialize(de).map(|( $($fname),* )| $name { $( $fname: $fname ),* })
             }
@@ -362,16 +360,16 @@ macro_rules! serde_impl(
     };
     // Serde impl for enum $name { $variant }
     ( $name:ident($ktype:ident) { $( $variant:ident => $fkey:expr ),+ } ) => {
-        impl serde::Serialize for $name {
-            fn serialize<S: serde::Serializer>(&self, ser: S) -> Result<S::Ok, S::Error> {
+        impl ::serde::Serialize for $name {
+            fn serialize<S: ::serde::Serializer>(&self, ser: S) -> Result<S::Ok, S::Error> {
                 match self {
                     $( &$name::$variant => $fkey ),*
                 }.serialize(ser)
             }
         }
-        impl serde::Deserialize for $name {
-            fn deserialize<D: serde::Deserializer>(de: D) -> Result<Self, D::Error> {
-                use serde::de::Error as _DummyErrorJustToUseTrait;
+        impl ::serde::Deserialize for $name {
+            fn deserialize<D: ::serde::Deserializer>(de: D) -> Result<Self, D::Error> {
+                use ::serde::de::Error as _DummyErrorJustToUseTrait;
                 let key = try!($ktype::deserialize(de));
                 $(
                     if &key == &$fkey {
@@ -384,25 +382,25 @@ macro_rules! serde_impl(
     };
     // Serde impl for enum $name { $variant($ftype) }
     ( $name:ident($ktype:ident) { $( $variant:ident($ftype:ty) => $fkey:expr ),* } ) => {
-        impl serde::Serialize for $name {
+        impl ::serde::Serialize for $name {
             #[inline]
-            fn serialize<S: serde::Serializer>(&self, ser: S) -> Result<S::Ok, S::Error> {
+            fn serialize<S: ::serde::Serializer>(&self, ser: S) -> Result<S::Ok, S::Error> {
                 match self {
                     $( &$name::$variant(ref obj) => ($fkey, obj).serialize(ser) ),*
                 }
             }
         }
-        impl serde::Deserialize for $name {
+        impl ::serde::Deserialize for $name {
             #[inline]
-            fn deserialize<D: serde::Deserializer>(de: D) -> Result<Self, D::Error> {
+            fn deserialize<D: ::serde::Deserializer>(de: D) -> Result<Self, D::Error> {
                 struct _Deserializer;
-                impl serde::de::Visitor for _Deserializer {
+                impl ::serde::de::Visitor for _Deserializer {
                     type Value = $name;
-                    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                    fn expecting(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
                         write!(formatter, "list")
                     }
-                    fn visit_seq<V: serde::de::SeqVisitor>(self, mut visitor: V) -> Result<$name, V::Error> {
-                        use serde::de::Error as _DummyErrorJustToUseTrait;
+                    fn visit_seq<V: ::serde::de::SeqVisitor>(self, mut visitor: V) -> Result<$name, V::Error> {
+                        use ::serde::de::Error as _DummyErrorJustToUseTrait;
                         let key: $ktype = try!(try!(visitor.visit()).ok_or(V::Error::custom("Enums must be encoded as tuples")));
                         $(
                             if &key == &$fkey {
