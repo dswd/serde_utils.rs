@@ -258,7 +258,8 @@ macro_rules! serde_impl(
     // Serde impl for struct $name*($ktype) { $fname: $ftype } as map
     ( $name:ident($ktype:ident?) { $( $fname:ident : $ftype:ty => $fkey:expr ),+ } ) => {
         impl serde::Serialize for $name {
-            fn serialize<S: serde::Serializer>(&self, ser: &mut S) -> Result<(), S::Error> {
+            fn serialize<S: serde::Serializer>(&self, ser: S) -> Result<S::Ok, S::Error> {
+                use serde::ser::SerializeMap;
                 let default: $name = Default::default();
                 let mut len = 0;
                 $(
@@ -269,20 +270,23 @@ macro_rules! serde_impl(
                 let mut state = try!(ser.serialize_map(Some(len)));
                 $(
                     if self.$fname != default.$fname {
-                        try!(ser.serialize_map_key(&mut state, $fkey));
-                        try!(ser.serialize_map_value(&mut state, &self.$fname));
+                        try!(state.serialize_entry(&$fkey, &self.$fname));
                     }
                 )*
-                ser.serialize_map_end(state)
+                state.end()
             }
         }
         impl serde::Deserialize for $name {
-            fn deserialize<D: serde::Deserializer>(de: &mut D) -> Result<Self, D::Error> {
+            fn deserialize<D: serde::Deserializer>(de: D) -> Result<Self, D::Error> {
                 use serde_utils::Obj as _DummyObjToSkipUnknownFields;
                 struct _Deserializer;
                 impl serde::de::Visitor for _Deserializer {
                     type Value = $name;
-                    fn visit_map<V: serde::de::MapVisitor>(&mut self, mut visitor: V) -> Result<Self::Value, V::Error> {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                        write!(formatter, "map")
+                    }
+
+                    fn visit_map<V: serde::de::MapVisitor>(self, mut visitor: V) -> Result<Self::Value, V::Error> {
                         let mut obj: $name = Default::default();
                         while let Some(key) = try!(visitor.visit_key::<$ktype>()) {
                             $(
@@ -303,22 +307,26 @@ macro_rules! serde_impl(
     // Serde impl for struct $name($ktype) { $fname: $ftype } as map
     ( $name:ident($ktype:ident) { $( $fname:ident : $ftype:ty => $fkey:expr ),+ } ) => {
         impl serde::Serialize for $name {
-            fn serialize<S: serde::Serializer>(&self, ser: &mut S) -> Result<(), S::Error> {
+            fn serialize<S: serde::Serializer>(&self, ser: S) -> Result<S::Ok, S::Error> {
+                use serde::ser::SerializeMap;
                 let mut state = try!(ser.serialize_map(Some( [ $( $fkey ),+ ].len() )));
                 $(
-                    try!(ser.serialize_map_key(&mut state, $fkey));
-                    try!(ser.serialize_map_value(&mut state, &self.$fname));
+                    try!(state.serialize_entry(&$fkey, &self.$fname));
                 )*
-                ser.serialize_map_end(state)
+                state.end()
             }
         }
         impl serde::Deserialize for $name {
-            fn deserialize<D: serde::Deserializer>(de: &mut D) -> Result<Self, D::Error> {
+            fn deserialize<D: serde::Deserializer>(de: D) -> Result<Self, D::Error> {
                 use serde_utils::Obj as _DummyObjToSkipUnknownFields;
                 struct _Deserializer;
                 impl serde::de::Visitor for _Deserializer {
                     type Value = $name;
-                    fn visit_map<V: serde::de::MapVisitor>(&mut self, mut visitor: V) -> Result<Self::Value, V::Error> {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                        write!(formatter, "map")
+                    }
+
+                    fn visit_map<V: serde::de::MapVisitor>(self, mut visitor: V) -> Result<Self::Value, V::Error> {
                         let mut obj: $name = Default::default();
                         while let Some(key) = try!(visitor.visit_key::<$ktype>()) {
                             $(
@@ -340,13 +348,13 @@ macro_rules! serde_impl(
     ( $name:ident { $( $fname:ident : $ftype:ty ),+ } ) => {
         impl serde::Serialize for $name {
             #[inline]
-            fn serialize<S: serde::Serializer>(&self, ser: &mut S) -> Result<(), S::Error> {
+            fn serialize<S: serde::Serializer>(&self, ser: S) -> Result<S::Ok, S::Error> {
                 ($( &self.$fname ),*).serialize(ser)
             }
         }
         impl serde::Deserialize for $name {
             #[inline]
-            fn deserialize<D: serde::Deserializer>(de: &mut D) -> Result<Self, D::Error> {
+            fn deserialize<D: serde::Deserializer>(de: D) -> Result<Self, D::Error> {
                 type T = ( $($ftype),* );
                 T::deserialize(de).map(|( $($fname),* )| $name { $( $fname: $fname ),* })
             }
@@ -355,14 +363,14 @@ macro_rules! serde_impl(
     // Serde impl for enum $name { $variant }
     ( $name:ident($ktype:ident) { $( $variant:ident => $fkey:expr ),+ } ) => {
         impl serde::Serialize for $name {
-            fn serialize<S: serde::Serializer>(&self, ser: &mut S) -> Result<(), S::Error> {
+            fn serialize<S: serde::Serializer>(&self, ser: S) -> Result<S::Ok, S::Error> {
                 match self {
                     $( &$name::$variant => $fkey ),*
                 }.serialize(ser)
             }
         }
         impl serde::Deserialize for $name {
-            fn deserialize<D: serde::Deserializer>(de: &mut D) -> Result<Self, D::Error> {
+            fn deserialize<D: serde::Deserializer>(de: D) -> Result<Self, D::Error> {
                 use serde::de::Error as _DummyErrorJustToUseTrait;
                 let key = try!($ktype::deserialize(de));
                 $(
@@ -370,7 +378,7 @@ macro_rules! serde_impl(
                         return Ok($name::$variant);
                     }
                 )*
-                Err(D::Error::unknown_variant("Invalid enum"))
+                Err(D::Error::custom("Invalid enum discriminator"))
             }
         }
     };
@@ -378,7 +386,7 @@ macro_rules! serde_impl(
     ( $name:ident($ktype:ident) { $( $variant:ident($ftype:ty) => $fkey:expr ),* } ) => {
         impl serde::Serialize for $name {
             #[inline]
-            fn serialize<S: serde::Serializer>(&self, ser: &mut S) -> Result<(), S::Error> {
+            fn serialize<S: serde::Serializer>(&self, ser: S) -> Result<S::Ok, S::Error> {
                 match self {
                     $( &$name::$variant(ref obj) => ($fkey, obj).serialize(ser) ),*
                 }
@@ -386,19 +394,22 @@ macro_rules! serde_impl(
         }
         impl serde::Deserialize for $name {
             #[inline]
-            fn deserialize<D: serde::Deserializer>(de: &mut D) -> Result<Self, D::Error> {
+            fn deserialize<D: serde::Deserializer>(de: D) -> Result<Self, D::Error> {
                 struct _Deserializer;
                 impl serde::de::Visitor for _Deserializer {
                     type Value = $name;
-                    fn visit_seq<V: serde::de::SeqVisitor>(&mut self, mut visitor: V) -> Result<$name, V::Error> {
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                        write!(formatter, "list")
+                    }
+                    fn visit_seq<V: serde::de::SeqVisitor>(self, mut visitor: V) -> Result<$name, V::Error> {
                         use serde::de::Error as _DummyErrorJustToUseTrait;
-                        let key: $ktype = try!(try!(visitor.visit()).ok_or(V::Error::end_of_stream()));
+                        let key: $ktype = try!(try!(visitor.visit()).ok_or(V::Error::custom("Enums must be encoded as tuples")));
                         $(
                             if &key == &$fkey {
-                                return Ok($name::$variant(try!(try!(visitor.visit()).ok_or(V::Error::end_of_stream()))));
+                                return Ok($name::$variant(try!(try!(visitor.visit()).ok_or(V::Error::custom("Enums must be encoded as tuples")))));
                             }
                         )*
-                        Err(V::Error::unknown_variant("Invalid enum"))
+                        Err(V::Error::custom("Invalid enum discriminator"))
                     }
                 }
                 de.deserialize_tuple(2, _Deserializer)

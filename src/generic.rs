@@ -204,7 +204,7 @@ impl Hash for Obj {
 
 impl Serialize for Obj {
     #[inline]
-    fn serialize<S: Serializer>(&self, ser: &mut S) -> Result<(), S::Error> {
+    fn serialize<S: Serializer>(&self, ser: S) -> Result<S::Ok, S::Error> {
         match *self {
             Obj::Null => ser.serialize_none(),
             Obj::Bool(val) => ser.serialize_bool(val),
@@ -225,81 +225,86 @@ impl Visitor for GenericVisitor {
     type Value = Obj;
 
     #[inline]
-    fn visit_none<E: Error>(&mut self) -> Result<Self::Value, E> {
+    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        write!(formatter, "any value")
+    }
+
+    #[inline]
+    fn visit_none<E: Error>(self) -> Result<Self::Value, E> {
         Ok(Obj::Null)
     }
 
     #[inline]
-    fn visit_bool<E: Error>(&mut self, val: bool) -> Result<Self::Value, E> {
+    fn visit_bool<E: Error>(self, val: bool) -> Result<Self::Value, E> {
         Ok(Obj::Bool(val))
     }
 
     #[inline]
-    fn visit_u64<E: Error>(&mut self, val: u64) -> Result<Self::Value, E> {
+    fn visit_u64<E: Error>(self, val: u64) -> Result<Self::Value, E> {
         Ok(Obj::Unsigned(val))
     }
 
     #[inline]
-    fn visit_i64<E: Error>(&mut self, val: i64) -> Result<Self::Value, E> {
+    fn visit_i64<E: Error>(self, val: i64) -> Result<Self::Value, E> {
         Ok(Obj::Signed(val))
     }
 
     #[inline]
-    fn visit_f64<E: Error>(&mut self, val: f64) -> Result<Self::Value, E> {
+    fn visit_f64<E: Error>(self, val: f64) -> Result<Self::Value, E> {
         Ok(Obj::Float(val))
     }
 
     #[inline]
-    fn visit_str<E: Error>(&mut self, val: &str) -> Result<Self::Value, E> {
+    fn visit_str<E: Error>(self, val: &str) -> Result<Self::Value, E> {
         Ok(Obj::Str(val.to_owned()))
     }
 
     #[inline]
-    fn visit_string<E: Error>(&mut self, val: String) -> Result<Self::Value, E> {
+    fn visit_string<E: Error>(self, val: String) -> Result<Self::Value, E> {
         Ok(Obj::Str(val))
     }
 
     #[inline]
-    fn visit_bytes<E: Error>(&mut self, val: &[u8]) -> Result<Self::Value, E> {
+    fn visit_bytes<E: Error>(self, val: &[u8]) -> Result<Self::Value, E> {
         let mut bin = Vec::with_capacity(val.len());
         bin.extend(val.iter().cloned());
         Ok(Obj::Bin(ByteBuf::from(bin)))
     }
 
     #[inline]
-    fn visit_byte_buf<E: Error>(&mut self, val: Vec<u8>) -> Result<Self::Value, E> {
+    fn visit_byte_buf<E: Error>(self, val: Vec<u8>) -> Result<Self::Value, E> {
         Ok(Obj::Bin(ByteBuf::from(val)))
     }
 
     #[inline]
-    fn visit_unit<E: Error>(&mut self) -> Result<Self::Value, E> {
+    fn visit_unit<E: Error>(self) -> Result<Self::Value, E> {
         Ok(Obj::Null)
     }
 
     #[inline]
-    fn visit_seq<V: SeqVisitor>(&mut self, mut visitor: V) -> Result<Self::Value, V::Error> {
+    fn visit_seq<V: SeqVisitor>(self, mut visitor: V) -> Result<Self::Value, V::Error> {
         let mut list = Vec::with_capacity(visitor.size_hint().0);
         while let Some(value) = try!(visitor.visit()) {
             list.push(value);
         }
-        try!(visitor.end());
+        //try!(visitor.end());
         Ok(Obj::List(list))
     }
 
     #[inline]
-    fn visit_map<V: MapVisitor>(&mut self, mut visitor: V) -> Result<Self::Value, V::Error> {
+    fn visit_map<V: MapVisitor>(self, mut visitor: V) -> Result<Self::Value, V::Error> {
         let mut map = BTreeMap::new();
         while let Some((key, value)) = try!(visitor.visit()) {
             map.insert(key, value);
         }
-        try!(visitor.end());
+        //try!(visitor.end());
         Ok(Obj::Map(map))
     }
 }
 
 impl Deserialize for Obj {
     #[inline]
-    fn deserialize<D: Deserializer>(de: &mut D) -> Result<Self, D::Error> {
+    fn deserialize<D: Deserializer>(de: D) -> Result<Self, D::Error> {
         de.deserialize(GenericVisitor)
     }
 }
