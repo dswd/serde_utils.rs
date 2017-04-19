@@ -288,7 +288,7 @@ macro_rules! serde_impl(
                         let mut obj: $name = Default::default();
                         while let Some(key) = try!(visitor.visit_key::<$ktype>()) {
                             $(
-                                if &key == &$fkey {
+                                if key == $fkey {
                                     obj.$fname = try!(visitor.visit_value());
                                     continue
                                 }
@@ -328,7 +328,7 @@ macro_rules! serde_impl(
                         let mut obj: $name = Default::default();
                         while let Some(key) = try!(visitor.visit_key::<$ktype>()) {
                             $(
-                                if &key == &$fkey {
+                                if key == $fkey {
                                     obj.$fname = try!(visitor.visit_value());
                                     continue
                                 }
@@ -372,7 +372,7 @@ macro_rules! serde_impl(
                 use ::serde::de::Error as _DummyErrorJustToUseTrait;
                 let key = try!($ktype::deserialize(de));
                 $(
-                    if &key == &$fkey {
+                    if key == $fkey {
                         return Ok($name::$variant);
                     }
                 )*
@@ -403,7 +403,7 @@ macro_rules! serde_impl(
                         use ::serde::de::Error as _DummyErrorJustToUseTrait;
                         let key: $ktype = try!(try!(visitor.visit()).ok_or(V::Error::custom("Enums must be encoded as tuples")));
                         $(
-                            if &key == &$fkey {
+                            if key == $fkey {
                                 return Ok($name::$variant(try!(try!(visitor.visit()).ok_or(V::Error::custom("Enums must be encoded as tuples")))));
                             }
                         )*

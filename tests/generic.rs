@@ -25,6 +25,7 @@ fn from_bytes<T: serde::Deserialize + Debug>(bytes: &[u8]) -> T {
     T::deserialize(&mut reader).unwrap()
 }
 
+#[allow(unknown_lints,needless_pass_by_value)]
 fn test_obj<T: serde::Serialize + serde::Deserialize + PartialEq + Debug>(obj: T) {
     let serialized = to_bytes(&obj);
     let deserialized = from_bytes(&serialized);
@@ -78,6 +79,7 @@ fn test_list() {
 
 macro_rules! map(
     { $( $key:expr => $val:expr ),* } => {
+        #[allow(unknown_lints,let_and_return)]
         {
             let mut _map = BTreeMap::new();
             $(
@@ -109,33 +111,34 @@ fn test_map() {
 fn test_eq() {
     assert_eq!(Obj::Null, Obj::Null);
     assert_eq!(Obj::Bool(true), Obj::Bool(true));
-    assert!(Obj::Bool(true) != Obj::Bool(false));
+    assert_ne!(Obj::Bool(true), Obj::Bool(false));
     assert_eq!(Obj::Unsigned(1), Obj::Unsigned(1));
-    assert!(Obj::Unsigned(1) != Obj::Unsigned(2));
+    assert_ne!(Obj::Unsigned(1), Obj::Unsigned(2));
     assert_eq!(Obj::Signed(-1), Obj::Signed(-1));
-    assert!(Obj::Signed(-1) != Obj::Signed(-2));
+    assert_ne!(Obj::Signed(-1), Obj::Signed(-2));
     assert_eq!(Obj::Signed(1), Obj::Signed(1));
     assert_eq!(Obj::Signed(1), Obj::Unsigned(1));
     assert_eq!(Obj::Signed(0), Obj::Unsigned(0));
     assert_eq!(Obj::Float(1.2), Obj::Float(1.2));
-    assert!(Obj::Float(3.5) != Obj::Float(1.2));
-    assert!(Obj::Float(f64::NAN) != Obj::Float(0.0));
+    assert_ne!(Obj::Float(3.5), Obj::Float(1.2));
+    assert_ne!(Obj::Float(f64::NAN), Obj::Float(0.0));
     assert_eq!(Obj::Float(f64::NAN), Obj::Float(f64::NAN));
     assert_eq!(Obj::Str("test".to_string()), Obj::Str("test".to_string()));
-    assert!(Obj::Str("test".to_string()) != Obj::Str("test2".to_string()));
+    assert_ne!(Obj::Str("test".to_string()), Obj::Str("test2".to_string()));
     assert_eq!(Obj::Bin(ByteBuf::from(vec![0,2,3])), Obj::Bin(ByteBuf::from(vec![0,2,3])));
-    assert!(Obj::Bin(ByteBuf::from(vec![0,2,3])) != Obj::Bin(ByteBuf::from(vec![0,1,3])));
+    assert_ne!(Obj::Bin(ByteBuf::from(vec![0,2,3])), Obj::Bin(ByteBuf::from(vec![0,1,3])));
     assert_eq!(Obj::List(vec![Obj::Null]), Obj::List(vec![Obj::Null]));
-    assert!(Obj::List(vec![Obj::Null]) != Obj::List(vec![Obj::Bool(false)]));
-    assert!(Obj::List(vec![Obj::Null]) != Obj::List(vec![Obj::Null, Obj::Bool(false)]));
+    assert_ne!(Obj::List(vec![Obj::Null]), Obj::List(vec![Obj::Bool(false)]));
+    assert_ne!(Obj::List(vec![Obj::Null]), Obj::List(vec![Obj::Null, Obj::Bool(false)]));
     assert_eq!(Obj::List(vec![Obj::Unsigned(2)]), Obj::List(vec![Obj::Signed(2)]));
     assert_eq!(Obj::Map(map!{Obj::Unsigned(1) => Obj::Null}), Obj::Map(map!{Obj::Unsigned(1) => Obj::Null}));
-    assert!(Obj::Map(map!{Obj::Unsigned(1) => Obj::Null}) != Obj::Map(map!{Obj::Unsigned(1) => Obj::Bool(false)}));
+    assert_ne!(Obj::Map(map!{Obj::Unsigned(1) => Obj::Null}), Obj::Map(map!{Obj::Unsigned(1) => Obj::Bool(false)}));
     assert_eq!(Obj::Map(map!{Obj::Unsigned(1) => Obj::Null}), Obj::Map(map!{Obj::Signed(1) => Obj::Null}));
 }
 
 macro_rules! check_ord(
     [ $( $val:expr ),* ] => {
+        #[allow(unknown_lints,needless_range_loop)]
         {
             let vals = vec![ $( $val ),* ];
             for i in 1..vals.len() {

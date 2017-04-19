@@ -20,6 +20,7 @@ fn from_bytes<T: serde::Deserialize + Debug>(bytes: &[u8]) -> T {
     T::deserialize(&mut reader).unwrap()
 }
 
+#[allow(unknown_lints,needless_pass_by_value)]
 fn test_obj<T: serde::Serialize + serde::Deserialize + PartialEq + Debug>(obj: T) {
     let serialized = to_bytes(&obj);
     let deserialized = from_bytes(&serialized);
