@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["Obj","A generic object that can hold any value deserialized via Serde."]],"macro":[["serde_impl","Macro for implementing (de-)serialization via serde in common cases"]]});

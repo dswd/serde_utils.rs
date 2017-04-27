@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `serde_impl` macro in crate `serde_utils`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, serde_impl">
+
+    <title>serde_utils::serde_impl - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../normalize.css">
+    <link rel="stylesheet" type="text/css" href="../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'><a href='index.html'>serde_utils</a></p><script>window.sidebarCurrent = {name: 'serde_impl', ty: 'macro', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content macro">
+<h1 class='fqn'><span class='in-band'>Macro <a href='index.html'>serde_utils</a>::<wbr><a class='macro' href=''>serde_impl</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a class='srclink' href='../src/serde_utils/macros.rs.html#255-417' title='goto source code'>[src]</a></span></h1>
+<pre class='rust macro'>
+<span class='macro'>macro_rules</span><span class='macro'>!</span> <span class='ident'>serde_impl</span> {
+    ( <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>name</span>:<span class='ident'>ident</span>(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>ktype</span>:<span class='ident'>ident</span><span class='question-mark'>?</span>) { $( <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>fname</span>:<span class='ident'>ident</span> : <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>ftype</span>:<span class='ident'>ty</span> <span class='op'>=&gt;</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>fkey</span>:<span class='ident'>expr</span> ),<span class='op'>+</span> } ) <span class='op'>=&gt;</span> { ... };
+    ( <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>name</span>:<span class='ident'>ident</span>(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>ktype</span>:<span class='ident'>ident</span>) { $( <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>fname</span>:<span class='ident'>ident</span> : <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>ftype</span>:<span class='ident'>ty</span> <span class='op'>=&gt;</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>fkey</span>:<span class='ident'>expr</span> ),<span class='op'>+</span> } ) <span class='op'>=&gt;</span> { ... };
+    ( <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>name</span>:<span class='ident'>ident</span> { $( <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>fname</span>:<span class='ident'>ident</span> : <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>ftype</span>:<span class='ident'>ty</span> ),<span class='op'>+</span> } ) <span class='op'>=&gt;</span> { ... };
+    ( <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>name</span>:<span class='ident'>ident</span>(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>ktype</span>:<span class='ident'>ident</span>) { $( <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>variant</span>:<span class='ident'>ident</span> <span class='op'>=&gt;</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>fkey</span>:<span class='ident'>expr</span> ),<span class='op'>+</span> } ) <span class='op'>=&gt;</span> { ... };
+    ( <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>name</span>:<span class='ident'>ident</span>(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>ktype</span>:<span class='ident'>ident</span>) { $( <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>variant</span>:<span class='ident'>ident</span>(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>ftype</span>:<span class='ident'>ty</span>) <span class='op'>=&gt;</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>fkey</span>:<span class='ident'>expr</span> ),<span class='op'>*</span> } ) <span class='op'>=&gt;</span> { ... };
+}</pre>
+<div class='docblock'><p>Macro for implementing (de-)serialization via serde in common cases</p>
+
+<h1 id='using-the-macro' class='section-header'><a href='#using-the-macro'>Using the macro</a></h1>
+<p>The macro provides implementations for <code>Serialize</code> and <code>Deserialize</code> for various kinds or
+data types. The macro syntax tries to stay as close as possible to the declaration of the
+data type.
+To use the macro, <code>serde</code> must be imported by either <code>use serde;</code> or <code>extern crate serde;</code>.</p>
+
+<h2 id='de-serializing-structs-as-maps' class='section-header'><a href='#de-serializing-structs-as-maps'>(De-)Serializing <code>struct</code>s as maps</a></h2>
+<p>To deserialize a struct data type as a map, it must implement the <code>Default</code> trait so that
+missing struct fields still have a value. The macro syntax for this case is:</p>
+
+<pre class='rust rust-example-rendered'>
+<span class='macro'>serde_impl</span><span class='macro'>!</span>(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>name</span>(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>ktype</span>) {
+   <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>fname</span>: <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>ftype</span> <span class='op'>=&gt;</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>fkey</span>,
+   ...
+});</pre>
+
+<p>where</p>
+
+<ul>
+<li><code>$name</code> is the name of the type to be implemented.</li>
+<li><code>$ktype</code> is the type for the keys in the mapping.</li>
+<li><code>$fname</code> is the name of a field (on the struct in Rust).</li>
+<li><code>$ftype</code> is the type of a field.</li>
+<li><code>$fkey</code> is the field key in the map (in serialized form).</li>
+</ul>
+
+<h3 id='example' class='section-header'><a href='#example'>Example</a></h3>
+<pre class='rust rust-example-rendered'>
+<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Default</span>)]</span>
+<span class='kw'>struct</span> <span class='ident'>Test</span> {
+    <span class='ident'>test</span>: <span class='ident'>String</span>,
+    <span class='ident'>num</span>: <span class='ident'>u64</span>,
+    <span class='ident'>option</span>: <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>bool</span><span class='op'>&gt;</span>,
+}
+<span class='macro'>serde_impl</span><span class='macro'>!</span>(<span class='ident'>Test</span>(<span class='ident'>String</span>) {
+    <span class='ident'>test</span>: <span class='ident'>String</span> <span class='op'>=&gt;</span> <span class='string'>&quot;test&quot;</span>,
+    <span class='ident'>num</span>: <span class='ident'>u64</span> <span class='op'>=&gt;</span> <span class='string'>&quot;num&quot;</span>,
+    <span class='ident'>option</span>: <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>bool</span><span class='op'>&gt;</span> <span class='op'>=&gt;</span> <span class='string'>&quot;option&quot;</span>
+});</pre>
+
+<p>Note that the <code>$ktype</code> must be an <em>owned type</em> corresponding to the used field keys,
+i.e. <code>String</code> instead of <code>&amp;str</code> in this example.</p>
+
+<p>It is also possible to use numeric field keys (when the serialization supports it, JSON does not).</p>
+
+<h3 id='example-1' class='section-header'><a href='#example-1'>Example</a></h3>
+<pre class='rust rust-example-rendered'>
+<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Default</span>)]</span>
+<span class='kw'>struct</span> <span class='ident'>Test</span> {
+    <span class='ident'>test</span>: <span class='ident'>String</span>,
+    <span class='ident'>num</span>: <span class='ident'>u64</span>,
+    <span class='ident'>option</span>: <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>bool</span><span class='op'>&gt;</span>,
+}
+<span class='macro'>serde_impl</span><span class='macro'>!</span>(<span class='ident'>Test</span>(<span class='ident'>u64</span>) {
+    <span class='ident'>test</span>: <span class='ident'>String</span> <span class='op'>=&gt;</span> <span class='number'>0</span>,
+    <span class='ident'>num</span>: <span class='ident'>u64</span> <span class='op'>=&gt;</span> <span class='number'>1</span>,
+    <span class='ident'>option</span>: <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>bool</span><span class='op'>&gt;</span> <span class='op'>=&gt;</span> <span class='number'>2</span>
+});</pre>
+
+<p>When deserializing data, the generated implementation will silently ignore all extra fields
+and use the default value for all missing fields.</p>
+
+<h3 id='compressed-maps' class='section-header'><a href='#compressed-maps'>Compressed maps</a></h3>
+<p>By adding a question mark after the key type the serialization will make sure to omit map
+entries containing the default value. During serialization, the default value will be set on
+all omitted fields.</p>
+
+<pre class='rust rust-example-rendered'>
+<span class='macro'>serde_impl</span><span class='macro'>!</span>(<span class='ident'>Test</span>(<span class='ident'>String</span><span class='question-mark'>?</span>) {
+    <span class='ident'>test</span>: <span class='ident'>String</span> <span class='op'>=&gt;</span> <span class='string'>&quot;test&quot;</span>,
+    <span class='ident'>num</span>: <span class='ident'>u64</span> <span class='op'>=&gt;</span> <span class='string'>&quot;num&quot;</span>,
+    <span class='ident'>option</span>: <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>bool</span><span class='op'>&gt;</span> <span class='op'>=&gt;</span> <span class='string'>&quot;option&quot;</span>
+});</pre>
+
+<h2 id='de-serializing-structs-as-tuples' class='section-header'><a href='#de-serializing-structs-as-tuples'>(De-)Serializing <code>struct</code>s as tuples</a></h2>
+<p>It is also possible to (de-)serialize structs as tuples containing all the fields in order.
+The macro syntax for this case is:</p>
+
+<pre class='rust rust-example-rendered'>
+<span class='macro'>serde_impl</span><span class='macro'>!</span>(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>name</span> {
+   <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>fname</span>: <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>ftype</span>,
+   ...
+});</pre>
+
+<p>where</p>
+
+<ul>
+<li><code>$name</code> is the name of the type to be implemented.</li>
+<li><code>$fname</code> is the name of a field (on the struct in Rust).</li>
+<li><code>$ftype</code> is the type of a field.</li>
+</ul>
+
+<h3 id='example-2' class='section-header'><a href='#example-2'>Example</a></h3>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>struct</span> <span class='ident'>Test</span> {
+    <span class='ident'>test</span>: <span class='ident'>String</span>,
+    <span class='ident'>num</span>: <span class='ident'>u64</span>,
+    <span class='ident'>option</span>: <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>bool</span><span class='op'>&gt;</span>,
+}
+<span class='macro'>serde_impl</span><span class='macro'>!</span>(<span class='ident'>Test</span> {
+    <span class='ident'>test</span>: <span class='ident'>String</span>,
+    <span class='ident'>num</span>: <span class='ident'>u64</span>,
+    <span class='ident'>option</span>: <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>bool</span><span class='op'>&gt;</span>
+});</pre>
+
+<p>The syntax basically just omits the <em>key type</em> and the <em>field keys</em> as no keys are used.
+The fields will just be (de-)serialized in order as a tuple.
+When derserializing a tuple as such a data struct, any missing or extra fields will be treated
+as an error. Therefore, the struct does not need to implement <code>Default</code>.</p>
+
+<h2 id='de-serializing-simple-enumss' class='section-header'><a href='#de-serializing-simple-enumss'>(De-)Serializing simple <code>enums</code>s</a></h2>
+<p>(De-)serializing enums that do not have parameters, just maps the variants to and from a
+serializable data type. The syntax in this case is:</p>
+
+<pre class='rust rust-example-rendered'>
+<span class='macro'>serde_impl</span><span class='macro'>!</span>(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>name</span>(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>ktype</span>) {
+   <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>variant</span> <span class='op'>=&gt;</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>fkey</span>,
+   ...
+});</pre>
+
+<p>where</p>
+
+<ul>
+<li><code>$name</code> is the name of the type to be implemented.</li>
+<li><code>$ktype</code> is the type for the serialized enum variants.</li>
+<li><code>$variant</code> is the name of a variant (on the enum in Rust).</li>
+<li><code>$fkey</code> is the key for a variant in serialized from.</li>
+</ul>
+
+<h3 id='example-3' class='section-header'><a href='#example-3'>Example</a></h3>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>enum</span> <span class='ident'>Test</span> {
+    <span class='ident'>A</span>, <span class='ident'>B</span>, <span class='ident'>C</span>
+}
+<span class='macro'>serde_impl</span><span class='macro'>!</span>(<span class='ident'>Test</span>(<span class='ident'>String</span>) {
+    <span class='ident'>A</span> <span class='op'>=&gt;</span> <span class='string'>&quot;a&quot;</span>,
+    <span class='ident'>B</span> <span class='op'>=&gt;</span> <span class='string'>&quot;b&quot;</span>,
+    <span class='ident'>C</span> <span class='op'>=&gt;</span> <span class='string'>&quot;c&quot;</span>
+});</pre>
+
+<p>Note that the <code>$ktype</code> must be an <em>owned type</em> corresponding to the used variant keys,
+i.e. <code>String</code> instead of <code>&amp;str</code> in this example.</p>
+
+<p>It is also possible to use numeric variant keys.</p>
+
+<h3 id='example-4' class='section-header'><a href='#example-4'>Example</a></h3>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>enum</span> <span class='ident'>Test</span> {
+    <span class='ident'>A</span>, <span class='ident'>B</span>, <span class='ident'>C</span>
+}
+<span class='macro'>serde_impl</span><span class='macro'>!</span>(<span class='ident'>Test</span>(<span class='ident'>u64</span>) {
+    <span class='ident'>A</span> <span class='op'>=&gt;</span> <span class='number'>0</span>,
+    <span class='ident'>B</span> <span class='op'>=&gt;</span> <span class='number'>1</span>,
+    <span class='ident'>C</span> <span class='op'>=&gt;</span> <span class='number'>2</span>
+});</pre>
+
+<h2 id='de-serializing-enumss-with-one-parameter' class='section-header'><a href='#de-serializing-enumss-with-one-parameter'>(De-)Serializing <code>enums</code>s with one parameter</a></h2>
+<p>It is also possible to (de-)serialize enums with <strong>exactly one</strong> parameter.
+The syntax in this case is:</p>
+
+<pre class='rust rust-example-rendered'>
+<span class='macro'>serde_impl</span><span class='macro'>!</span>(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>name</span>(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>ktype</span>) {
+   <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>variant</span>(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>ftype</span>) <span class='op'>=&gt;</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>fkey</span>,
+   ...
+});</pre>
+
+<p>where</p>
+
+<ul>
+<li><code>$name</code> is the name of the type to be implemented.</li>
+<li><code>$ktype</code> is the type for the serialized enum variants.</li>
+<li><code>$variant</code> is the name of a variant (on the enum in Rust).</li>
+<li><code>$ftype</code> is the type of the variant parameter.</li>
+<li><code>$fkey</code> is the key for a variant in serialized from.</li>
+</ul>
+
+<h3 id='example-5' class='section-header'><a href='#example-5'>Example</a></h3>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>enum</span> <span class='ident'>Test</span> {
+    <span class='ident'>A</span>(<span class='ident'>u64</span>), <span class='ident'>B</span>(<span class='ident'>String</span>), <span class='ident'>C</span>(<span class='ident'>bool</span>)
+}
+<span class='macro'>serde_impl</span><span class='macro'>!</span>(<span class='ident'>Test</span>(<span class='ident'>String</span>) {
+    <span class='ident'>A</span>(<span class='ident'>u64</span>) <span class='op'>=&gt;</span> <span class='string'>&quot;a&quot;</span>,
+    <span class='ident'>B</span>(<span class='ident'>String</span>) <span class='op'>=&gt;</span> <span class='string'>&quot;b&quot;</span>,
+    <span class='ident'>C</span>(<span class='ident'>bool</span>) <span class='op'>=&gt;</span> <span class='string'>&quot;c&quot;</span>
+});</pre>
+
+<p>Note that the <code>$ktype</code> must be an <em>owned type</em> corresponding to the used variant keys,
+i.e. <code>String</code> instead of <code>&amp;str</code> in this example.</p>
+
+<p>It is also possible to use numeric variant keys.</p>
+
+<h3 id='example-6' class='section-header'><a href='#example-6'>Example</a></h3>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>enum</span> <span class='ident'>Test</span> {
+    <span class='ident'>A</span>(<span class='ident'>u64</span>), <span class='ident'>B</span>(<span class='ident'>String</span>), <span class='ident'>C</span>(<span class='ident'>bool</span>)
+}
+<span class='macro'>serde_impl</span><span class='macro'>!</span>(<span class='ident'>Test</span>(<span class='ident'>u64</span>) {
+    <span class='ident'>A</span>(<span class='ident'>u64</span>) <span class='op'>=&gt;</span> <span class='number'>0</span>,
+    <span class='ident'>B</span>(<span class='ident'>String</span>) <span class='op'>=&gt;</span> <span class='number'>1</span>,
+    <span class='ident'>C</span>(<span class='ident'>bool</span>) <span class='op'>=&gt;</span> <span class='number'>2</span>
+});</pre>
+
+<p>The limitation to one parameter can be circumvented by wrapping multiple parameters in a tuple:</p>
+
+<pre class='rust rust-example-rendered'>
+<span class='kw'>enum</span> <span class='ident'>Test</span> {
+   <span class='prelude-val'>None</span>(()),
+   <span class='ident'>Single</span>(<span class='ident'>String</span>),
+   <span class='ident'>Multiple</span>((<span class='ident'>u64</span>, <span class='ident'>bool</span>))
+}</pre>
+
+<p>instead of</p>
+
+<pre class='rust rust-example-rendered'>
+<span class='kw'>enum</span> <span class='ident'>Test</span> {
+   <span class='prelude-val'>None</span>,
+   <span class='ident'>Single</span>(<span class='ident'>String</span>),
+   <span class='ident'>Multiple</span>(<span class='ident'>u64</span>, <span class='ident'>bool</span>)
+}</pre>
+
+<h2 id='limitations' class='section-header'><a href='#limitations'>Limitations</a></h2>
+<p>The following things do not work, and most likely will never work:</p>
+
+<ul>
+<li>Data types with lifetimes</li>
+<li>Parametrized data types</li>
+<li>Enums with multiple parameters</li>
+<li>Enums where different variants have different parameter counts</li>
+<li>Enums with field names</li>
+<li>Tuple structs</li>
+<li>More fancy key types than String and numeric types might not work</li>
+</ul>
+</div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "serde_utils";
+    </script>
+    <script src="../jquery.js"></script>
+    <script src="../main.js"></script>
+    <script defer src="../search-index.js"></script>
+</body>
+</html>
