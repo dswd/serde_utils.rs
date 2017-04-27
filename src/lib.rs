@@ -16,6 +16,7 @@
 //! ```
 
 extern crate serde;
+extern crate serde_bytes;
 
 mod generic;
 #[macro_use] mod macros;

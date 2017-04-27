@@ -4,9 +4,9 @@ use std::mem::transmute;
 use std::fmt;
 use std::cmp::Ordering;
 
-use serde::bytes::ByteBuf;
+use serde_bytes::ByteBuf;
 use serde::{Serialize, Serializer, Deserialize, Deserializer};
-use serde::de::{Visitor, SeqVisitor, MapVisitor, Error};
+use serde::de::{Visitor, SeqAccess, MapAccess, Error};
 
 /// A generic object that can hold any value deserialized via Serde.
 ///
@@ -221,7 +221,7 @@ impl Serialize for Obj {
 
 struct GenericVisitor;
 
-impl Visitor for GenericVisitor {
+impl<'a> Visitor<'a> for GenericVisitor {
     type Value = Obj;
 
     #[inline]
@@ -282,30 +282,32 @@ impl Visitor for GenericVisitor {
     }
 
     #[inline]
-    fn visit_seq<V: SeqVisitor>(self, mut visitor: V) -> Result<Self::Value, V::Error> {
-        let mut list = Vec::with_capacity(visitor.size_hint().0);
-        while let Some(value) = try!(visitor.visit()) {
+    fn visit_seq<V: SeqAccess<'a>>(self, mut visitor: V) -> Result<Self::Value, V::Error> {
+        let mut list = if let Some(len) = visitor.size_hint() {
+            Vec::with_capacity(len)
+        } else {
+            Vec::new()
+        };
+        while let Some(value) = try!(visitor.next_element()) {
             list.push(value);
         }
-        //try!(visitor.end());
         Ok(Obj::List(list))
     }
 
     #[inline]
-    fn visit_map<V: MapVisitor>(self, mut visitor: V) -> Result<Self::Value, V::Error> {
+    fn visit_map<V: MapAccess<'a>>(self, mut visitor: V) -> Result<Self::Value, V::Error> {
         let mut map = BTreeMap::new();
-        while let Some((key, value)) = try!(visitor.visit()) {
+        while let Some((key, value)) = try!(visitor.next_entry()) {
             map.insert(key, value);
         }
-        //try!(visitor.end());
         Ok(Obj::Map(map))
     }
 }
 
-impl Deserialize for Obj {
+impl<'a> Deserialize<'a> for Obj {
     #[inline]
-    fn deserialize<D: Deserializer>(de: D) -> Result<Self, D::Error> {
-        de.deserialize(GenericVisitor)
+    fn deserialize<D: Deserializer<'a>>(de: D) -> Result<Self, D::Error> {
+        de.deserialize_any(GenericVisitor)
     }
 }
 

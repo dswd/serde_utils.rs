@@ -1,6 +1,6 @@
 [package]
 name = "serde_utils"
-version = "0.5.2"
+version = "0.6.0"
 authors = ["Dennis Schwerdel <schwerdel@googlemail.com>"]
 license = "LGPL-3.0"
 description = "Utility macros and types for Serde."
@@ -11,7 +11,8 @@ keywords = ["serde"]
 readme = "README.md"
 
 [dependencies]
-serde = "0.9"
+serde = "1.0"
+serde_bytes = "0.10"
 
 [dev-dependencies]
-rmp-serde = "0.12"
+rmp-serde = "0.13"

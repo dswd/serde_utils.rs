@@ -1,4 +1,5 @@
 extern crate serde;
+extern crate serde_bytes;
 extern crate rmp_serde;
 extern crate serde_utils;
 
@@ -7,7 +8,7 @@ use std::io::Cursor;
 use std::collections::BTreeMap;
 use std::f64;
 
-use serde::bytes::ByteBuf;
+use serde_bytes::ByteBuf;
 use serde_utils::Obj;
 
 fn to_bytes<T: serde::Serialize + Debug>(obj: &T) -> Vec<u8> {
@@ -19,14 +20,14 @@ fn to_bytes<T: serde::Serialize + Debug>(obj: &T) -> Vec<u8> {
     serialized
 }
 
-fn from_bytes<T: serde::Deserialize + Debug>(bytes: &[u8]) -> T {
+fn from_bytes<'a, T: serde::Deserialize<'a> + Debug>(bytes: &[u8]) -> T {
     let cursor = Cursor::new(bytes);
     let mut reader = rmp_serde::Deserializer::new(cursor);
     T::deserialize(&mut reader).unwrap()
 }
 
 #[allow(unknown_lints,needless_pass_by_value)]
-fn test_obj<T: serde::Serialize + serde::Deserialize + PartialEq + Debug>(obj: T) {
+fn test_obj<'a, T: serde::Serialize + serde::Deserialize<'a> + PartialEq + Debug>(obj: T) {
     let serialized = to_bytes(&obj);
     let deserialized = from_bytes(&serialized);
     assert_eq!(obj, deserialized);
@@ -65,9 +66,9 @@ fn test_string() {
 
 #[test]
 fn test_binary() {
-    test_obj(Obj::Bin(serde::bytes::ByteBuf::from(vec![1,2,3,4])));
-    test_obj(Obj::Bin(serde::bytes::ByteBuf::from(vec![])));
-    test_obj(Obj::Bin(serde::bytes::ByteBuf::from(vec![0,1,2,3,4])));
+    test_obj(Obj::Bin(serde_bytes::ByteBuf::from(vec![1,2,3,4])));
+    test_obj(Obj::Bin(serde_bytes::ByteBuf::from(vec![])));
+    test_obj(Obj::Bin(serde_bytes::ByteBuf::from(vec![0,1,2,3,4])));
 }
 
 #[test]
