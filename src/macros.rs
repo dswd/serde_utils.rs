@@ -265,10 +265,10 @@ macro_rules! serde_impl(
                         len += 1;
                     }
                 )*
-                let mut state = try!(ser.serialize_map(Some(len)));
+                let mut state = ser.serialize_map(Some(len))?;
                 $(
                     if self.$fname != default.$fname {
-                        try!(state.serialize_entry(&$fkey, &self.$fname));
+                        state.serialize_entry(&$fkey, &self.$fname)?;
                     }
                 )*
                 state.end()
@@ -286,14 +286,14 @@ macro_rules! serde_impl(
 
                     fn visit_map<V: ::serde::de::MapAccess<'a>>(self, mut visitor: V) -> Result<Self::Value, V::Error> {
                         let mut obj: $name = Default::default();
-                        while let Some(key) = try!(visitor.next_key::<$ktype>()) {
+                        while let Some(key) = visitor.next_key::<$ktype>()? {
                             $(
                                 if key == $fkey {
-                                    obj.$fname = try!(visitor.next_value());
+                                    obj.$fname = visitor.next_value()?;
                                     continue
                                 }
                             )*
-                            let _skip: _DummyObjToSkipUnknownFields = try!(visitor.next_value());
+                            let _skip: _DummyObjToSkipUnknownFields = visitor.next_value()?;
                         }
                         Ok(obj)
                     }
@@ -307,9 +307,9 @@ macro_rules! serde_impl(
         impl ::serde::Serialize for $name {
             fn serialize<S: ::serde::Serializer>(&self, ser: S) -> Result<S::Ok, S::Error> {
                 use ::serde::ser::SerializeMap;
-                let mut state = try!(ser.serialize_map(Some( [ $( $fkey ),+ ].len() )));
+                let mut state = ser.serialize_map(Some( [ $( $fkey ),+ ].len() ))?;
                 $(
-                    try!(state.serialize_entry(&$fkey, &self.$fname));
+                    state.serialize_entry(&$fkey, &self.$fname)?;
                 )*
                 state.end()
             }
@@ -326,19 +326,19 @@ macro_rules! serde_impl(
 
                     fn visit_map<V: ::serde::de::MapAccess<'a>>(self, mut visitor: V) -> Result<Self::Value, V::Error> {
                         let mut obj: $name = Default::default();
-                        while let Some(key) = try!(visitor.next_key::<$ktype>()) {
+                        while let Some(key) = visitor.next_key::<$ktype>()? {
                             $(
                                 if key == $fkey {
-                                    obj.$fname = try!(visitor.next_value());
+                                    obj.$fname = visitor.next_value()?;
                                     continue
                                 }
                             )*
-                            let _skip: _DummyObjToSkipUnknownFields = try!(visitor.next_value());
+                            let _skip: _DummyObjToSkipUnknownFields = visitor.next_value()?;
                         }
                         Ok(obj)
                     }
                 }
-                Ok(try!(de.deserialize_map(_Deserializer)))
+                Ok(de.deserialize_map(_Deserializer))?
             }
         }
     };
@@ -370,7 +370,7 @@ macro_rules! serde_impl(
         impl<'a> ::serde::Deserialize<'a> for $name {
             fn deserialize<D: ::serde::Deserializer<'a>>(de: D) -> Result<Self, D::Error> {
                 use ::serde::de::Error as _DummyErrorJustToUseTrait;
-                let key = try!($ktype::deserialize(de));
+                let key = $ktype::deserialize(de)?;
                 $(
                     if key == $fkey {
                         return Ok($name::$variant);
@@ -401,10 +401,10 @@ macro_rules! serde_impl(
                     }
                     fn visit_seq<V: ::serde::de::SeqAccess<'a>>(self, mut visitor: V) -> Result<$name, V::Error> {
                         use ::serde::de::Error as _DummyErrorJustToUseTrait;
-                        let key: $ktype = try!(try!(visitor.next_element()).ok_or(V::Error::custom("Enums must be encoded as tuples")));
+                        let key: $ktype = visitor.next_element()?.ok_or(V::Error::custom("Enums must be encoded as tuples"))?;
                         $(
                             if key == $fkey {
-                                return Ok($name::$variant(try!(try!(visitor.next_element()).ok_or(V::Error::custom("Enums must be encoded as tuples")))));
+                                return Ok($name::$variant(visitor.next_element()?.ok_or(V::Error::custom("Enums must be encoded as tuples")))?);
                             }
                         )*
                         Err(V::Error::custom("Invalid enum discriminator"))

@@ -288,7 +288,7 @@ impl<'a> Visitor<'a> for GenericVisitor {
         } else {
             Vec::new()
         };
-        while let Some(value) = try!(visitor.next_element()) {
+        while let Some(value) = visitor.next_element()? {
             list.push(value);
         }
         Ok(Obj::List(list))
@@ -297,7 +297,7 @@ impl<'a> Visitor<'a> for GenericVisitor {
     #[inline]
     fn visit_map<V: MapAccess<'a>>(self, mut visitor: V) -> Result<Self::Value, V::Error> {
         let mut map = BTreeMap::new();
-        while let Some((key, value)) = try!(visitor.next_entry()) {
+        while let Some((key, value)) = visitor.next_entry()? {
             map.insert(key, value);
         }
         Ok(Obj::Map(map))
