@@ -298,7 +298,7 @@ macro_rules! serde_impl(
                         Ok(obj)
                     }
                 }
-                Ok(try!(de.deserialize_map(_Deserializer)))
+                Ok(de.deserialize_map(_Deserializer)?)
             }
         }
     };
@@ -404,7 +404,7 @@ macro_rules! serde_impl(
                         let key: $ktype = visitor.next_element()?.ok_or(V::Error::custom("Enums must be encoded as tuples"))?;
                         $(
                             if key == $fkey {
-                                return Ok($name::$variant(visitor.next_element()?.ok_or(V::Error::custom("Enums must be encoded as tuples")))?);
+                                return Ok($name::$variant(visitor.next_element()?.ok_or(V::Error::custom("Enums must be encoded as tuples"))?));
                             }
                         )*
                         Err(V::Error::custom("Invalid enum discriminator"))
